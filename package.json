@@ -10,7 +10,8 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:codenote.createCodenoteConfig"
+    "onCommand:codenote.createCodenoteConfig",
+    "onCommand:codenote.newNote"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,6 +19,10 @@
       {
         "command": "codenote.createCodenoteConfig",
         "title": "Create codenote configuration"
+      },
+      {
+        "command": "codenote.newNote",
+        "title": "New note"
       }
     ]
   },
