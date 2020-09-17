@@ -52,5 +52,9 @@
   },
   "lint-staged": {
     "*.{ts,js,css,html}": "npx prettier --write"
+  },
+  "dependencies": {
+    "@types/js-yaml": "^3.12.5",
+    "js-yaml": "^3.14.0"
   }
 }
