@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export function activate(context: vscode.ExtensionContext) {
   let { root, conoco, ns } = getDirPointTo();
-  vscode.workspace.onDidChangeWorkspaceFolders((e) => {
+  vscode.workspace.onDidChangeWorkspaceFolders(() => {
     const obj = getDirPointTo();
     root = obj.root;
     conoco = obj.conoco;
@@ -36,38 +36,43 @@ export function activate(context: vscode.ExtensionContext) {
       const anchor = selection.anchor;
       const end = selection.end;
       if (!selection.isEmpty) {
-        currentEditor.setDecorations(getDecorationTypeFromConfig(), [
-          new vscode.Range(anchor, end),
-        ]);
-      }
-      const openedFileAbsPath = currentEditor.document.fileName;
-      console.log(openedFileAbsPath);
-      //remainingPath contain '\' at begin, eg: '\text.js', '\folder1\text.js', '\folder1\folder\text.js'.
-      const remainingPath = openedFileAbsPath.slice(root?.length);
-      const destination = ns.concat(remainingPath);
-      console.log(destination);
-
-      const record = `
+        const openedFileAbsPath = currentEditor.document.fileName;
+        //remainingPath contain '\' at begin, eg: '\text.js', '\folder1\text.js', '\folder1\folder\text.js'.
+        const remainingPath = openedFileAbsPath.slice(root?.length);
+        const destination = ns.concat(remainingPath);
+        vscode.window
+          .showInputBox({
+            prompt: 'Input the note and generate a piece of record.',
+            ignoreFocusOut: true,
+          })
+          .then((val) => {
+            if (typeof val !== 'undefined') {
+              const record = `
 -
   startLine: ${anchor.line}
   endLine: ${end.line}
   startCharacter: ${anchor.character}
   endCharacter: ${end.character}
-  branch: ''
   id: ${uuidv4()}
-  note: ''
+  note: ${val.trim()}
       `;
-      //concat result, eg: 'c:\abc\projRoot\.conoco\ns\deep\openedFilename.js.yaml', 'ns' is the folder that store the note histroy.
-      const yamlFile = destination.concat('.yaml');
-      fs.appendFile(yamlFile, record, 'utf8', (err) => {
-        if (err) {
-          vscode.workspace.fs
-            .createDirectory(vscode.Uri.file(path.dirname(yamlFile)))
-            .then(() => {
-              fs.appendFile(yamlFile, record, 'utf8', () => {});
-            });
-        }
-      });
+              //concat result, eg: 'c:\abc\projRoot\.conoco\ns\deep\openedFilename.js.yaml', 'ns' is the folder that store the note histroy.
+              const yamlFile = destination.concat('.yaml');
+              fs.appendFile(yamlFile, record, 'utf8', (err) => {
+                if (err) {
+                  vscode.workspace.fs
+                    .createDirectory(vscode.Uri.file(path.dirname(yamlFile)))
+                    .then(() => {
+                      fs.appendFile(yamlFile, record, 'utf8', () => {});
+                    });
+                }
+              });
+            }
+          });
+        currentEditor.setDecorations(getDecorationTypeFromConfig(), [
+          new vscode.Range(anchor, end),
+        ]);
+      }
     } else {
       vscode.window.showErrorMessage(
         "You can't new note when no active editor."
